@@ -47,7 +47,7 @@ export default {
         targetIpAddress: {
             type: String,
             default: '',
-        }
+        },
     },
     data() {
         return {

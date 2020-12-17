@@ -39,7 +39,10 @@
         <v-footer>
             <span>Prisco - Provisioning Cisco</span>
             <v-spacer />
-            <span>by Kevin Kuusela & Adrian Lyxell</span>
+            <span
+                >by
+                <a style="color: red" href="https://sdnit.se">SDNit AB</a></span
+            >
         </v-footer>
     </v-app>
 </template>

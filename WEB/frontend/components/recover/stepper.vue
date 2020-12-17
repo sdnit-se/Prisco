@@ -24,7 +24,7 @@
                     <v-divider></v-divider>
 
                     <v-stepper-step :complete="step > 2" step="2">
-                        Update IPAM
+                        Confirm
                     </v-stepper-step>
 
                     <v-divider></v-divider>
@@ -48,25 +48,11 @@
                                     </v-col>
                                     <v-col cols="12" md="6" sm="6">
                                         <v-text-field
-                                            v-model="macAddressChild"
-                                            :rules="macAddressRules"
+                                            v-model="ipAddress"
+                                            :rules="ipAddressRules"
                                             outlined
-                                            label="New Cisco Switch MAC-address"
+                                            label="IP address the switch will have after"
                                             required
-                                            @keyup="
-                                                $emit(
-                                                    'mac-address',
-                                                    macAddressChild
-                                                )
-                                            "
-                                        />
-                                    </v-col>
-                                    <v-col cols="12">
-                                        <v-text-field
-                                            v-model="description"
-                                            outlined
-                                            label="Add Description to host (Optional)"
-                                            hint="This description will be shown in IPAM"
                                         />
                                     </v-col>
                                 </v-row>
@@ -109,13 +95,11 @@
                                 <div v-if="!loading">
                                     <OneSwitch
                                         :hostname="hostname"
-                                        :mac-address-child="macAddressChild"
-                                        :description="description"
-                                        :ipam-data="ipamData"
+                                        :ip-address="ipAddress"
                                     />
                                     <div>
-                                        Are you sure you want to update IPAM
-                                        with the data above?
+                                        Are you sure you want to continue with
+                                        the data above?
                                     </div>
                                 </div>
                                 <v-row>
@@ -157,39 +141,6 @@
                                         align="center"
                                         justify="center"
                                     >
-                                        Updating IPAM
-                                        <v-progress-circular
-                                            v-if="loadingUpdatedIpam"
-                                            :size="25"
-                                            :width="3"
-                                            class="ma-4"
-                                            color="grey"
-                                            indeterminate
-                                        />
-                                        <v-icon
-                                            v-if="updatedIpam === true"
-                                            color="green"
-                                        >
-                                            mdi-check-bold
-                                        </v-icon>
-                                        <v-icon
-                                            v-if="updatedIpam === false"
-                                            color="red"
-                                        >
-                                            mdi-alert
-                                        </v-icon>
-                                        <v-icon
-                                            v-if="updatedIpam === ''"
-                                            color="grey"
-                                        >
-                                            mdi-history
-                                        </v-icon>
-                                    </v-row>
-                                    <v-row
-                                        class="font-weight-light"
-                                        align="center"
-                                        justify="center"
-                                    >
                                         Provisioning Switch
                                         <v-progress-circular
                                             v-if="loadingSwitchProvisioned"
@@ -210,12 +161,6 @@
                                             color="red"
                                         >
                                             mdi-alert
-                                        </v-icon>
-                                        <v-icon
-                                            v-if="updatedIpam === ''"
-                                            color="grey"
-                                        >
-                                            mdi-history
                                         </v-icon>
                                     </v-row>
                                     <v-row
@@ -252,7 +197,7 @@
                                             mdi-alert
                                         </v-icon>
                                         <v-icon
-                                            v-if="updatedIpam === ''"
+                                            v-if="switchProvisioned === ''"
                                             color="grey"
                                         >
                                             mdi-history
@@ -265,8 +210,7 @@
                                         "
                                         class="font-weight-light"
                                     >
-                                        Success, IPAM is now updated and switch
-                                        is provisioned.
+                                        Success, switch is provisioned.
                                     </div>
                                     <div
                                         v-if="failed"
@@ -275,7 +219,7 @@
                                         {{ failedText }}
                                     </div>
                                     <v-textarea
-                                        v-if="outputFromAnsible.length > 0"
+                                        v-if="outputFromAnsible !== ''"
                                         v-model="outputFromAnsible"
                                         label="Console"
                                         height="300"
@@ -352,12 +296,13 @@ export default {
             targetIpAddressChild: '',
             hostname: '',
             hostnameRules: [(v) => !!v || 'Hostname is required'],
-            macAddressChild: '',
-            macAddressRules: [
-                (v) => !!v || 'Mac-address is required',
+            ipAddress: '',
+            ipAddressRules: [
+                (v) => !!v || 'IP-Address is required',
                 (v) =>
-                    /^(([A-Fa-f0-9]{2}[:]){5}[A-Fa-f0-9]{2}[,]?)+$/i.test(v) ||
-                    'Has to be formated 00:00:00:00:00:00',
+                    /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(
+                        v
+                    ) || 'Has to be formated XXX.XXX.XXX.XXX',
             ],
             description: '',
             failedToVerify: false,
@@ -365,27 +310,16 @@ export default {
             failed: false,
             failedText: 'Failed to verify host, do it manually.',
             // LOADING
-            loadingUpdatedIpam: false,
             loadingSwitchProvisioned: false,
             loadingSwitchProvisionedVerify: false,
-            updatedIpam: '',
             switchProvisioned: '',
             switchProvisionedVerify: '',
             switchProvisionedVerifyDone: '',
             loading: false,
-            // IP ADDRESS
-            ip_address: '',
             // VERIFY
             verifyTimesValue: 0,
             // CONSOLE
             outputFromAnsible: '',
-            ipamData: [
-                {
-                    hostname: '',
-                    macAddress: '',
-                    description: '',
-                },
-            ],
         }
     },
     mounted() {
@@ -411,12 +345,70 @@ export default {
             this.failed = true
             this.failedText = error.response.data.message
         },
+        startToVerifySwitch(response) {
+            // Update Provision done and stop loading
+            this.loadingSwitchProvisioned = false
+            // Start to verify
+            this.outputFromAnsible = response.data.output
+            if (response.data.success === true) {
+                this.loadingSwitchProvisionedVerify = true
+                this.switchProvisioned = true
+                let i = 0
+                do {
+                    task(i)
+                    i++
+                } while (
+                    i < 20 &&
+                    this.switchProvisionedVerify !== true &&
+                    this.switchProvisionedVerify !== false
+                )
+                function task(i) {
+                    setTimeout(function () {
+                        this.loadingSwitchProvisionedVerify = true
+                        try {
+                            axios
+                                .get('/api/ping/' + this.ipAddress)
+                                .then((response) => {
+                                    if (response.data.switchIsUp === true) {
+                                        this.switchProvisionedVerifyDone = true
+                                        this.switchProvisionedVerify = true
+                                        this.successMessage(
+                                            'Switch is up and reachable!'
+                                        )
+                                    } else {
+                                        this.verifyTimesValue++
+                                        if (this.verifyTimesValue > 20) {
+                                            this.errorMessageOwnText(
+                                                'No response from switch... will not try again.'
+                                            )
+                                        } else {
+                                            this.errorMessageOwnText(
+                                                'No response from switch (' +
+                                                    this.verifyTimesValue +
+                                                    '/ 20) trying again in 60 seconds....'
+                                            )
+                                        }
+                                    }
+                                })
+                                .catch((error) => {
+                                    this.switchProvisionedVerify = false
+                                    this.errorMessage(error)
+                                })
+                        } catch (error) {
+                            console.log(error)
+                        }
+                    }, 60000 * i)
+                }
+                this.loadingSwitchProvisionedVerify = false
+                this.switchProvisionedVerify = false
+            } else {
+                this.switchProvisioned = false
+            }
+        },
         startToProvisionSwitch() {
             // RESET ALL FIELDS
-            this.loadingUpdatedIpam = false
             this.loadingSwitchProvisioned = false
             this.loadingSwitchProvisionedVerify = false
-            this.updatedIpam = ''
             this.switchProvisioned = ''
             this.switchProvisionedVerify = ''
             this.switchProvisionedVerifyDone = ''
@@ -424,125 +416,32 @@ export default {
 
             // START LOADING
             this.loading = true
-            this.loadingUpdatedIpam = true
 
             // JUMP TO STEP 3
             this.step = 3
 
             // START PROCESS (This is pretty ugly...)
             try {
-                const payloadIpam = {
-                    id: this.ipamData[0].id,
-                    mac_address: this.macAddressChild,
-                    description: this.description,
+                // Start Provisioning
+                this.loadingSwitchProvisioned = true
+                const payloadProvision = {
+                    target_ipAddress: this.targetIpAddressChild,
+                    ip_address: this.ipAddress,
+                    hostname: this.hostname,
                 }
                 axios
-                    .patch('/api/ipam/' + this.hostname, payloadIpam)
+                    .post('/api/provision', payloadProvision)
                     .then((response) => {
-                        // UpatedIpam Done and stop loading
-                        this.loadingUpdatedIpam = false
-                        this.updatedIpam = true
-                        // Start Provisioning
-                        this.loadingSwitchProvisioned = true
-                        this.ip_address = this.ipamData[0].ip
-                        const payloadProvision = {
-                            target_ip_address: this.targetIpAddressChild,
-                            ip_id: this.ipamData[0].id,
-                            ip_address: this.ipamData[0].ip,
-                            hostname: this.hostname,
-                            subnet_id: this.ipamData[0].subnetId,
-                            mac_address: this.macAddressChild,
-                        }
-                        axios
-                            .post('/api/provision', payloadProvision)
-                            .then((response) => {
-                                // Update Provision done and stop loading
-                                this.loadingSwitchProvisioned = false
-                                // Start to verify
-                                this.outputFromAnsible = response.data.output
-                                if (response.data.success === true) {
-                                    this.loadingSwitchProvisionedVerify = true
-                                    this.switchProvisioned = true
-                                    let i = 0
-                                    do {
-                                        task(i)
-                                        i++
-                                    } while (
-                                        i < 20 &&
-                                        this.switchProvisionedVerify !== true &&
-                                        this.switchProvisionedVerify !== false
-                                    )
-                                    function task(i) {
-                                        setTimeout(function () {
-                                            this.loadingSwitchProvisionedVerify = true
-                                            try {
-                                                axios
-                                                    .get(
-                                                        '/api/' +
-                                                            this.ipID +
-                                                            '/ping/'
-                                                    )
-                                                    .then((response) => {
-                                                        if (
-                                                            response.data.data
-                                                                .exit_code === 0
-                                                        ) {
-                                                            this.switchProvisionedVerifyDone = true
-                                                            this.switchProvisionedVerify = true
-                                                            this.successMessage(
-                                                                'Switch is up and reachable!'
-                                                            )
-                                                        } else {
-                                                            this
-                                                                .verifyTimesValue++
-                                                            if (
-                                                                this
-                                                                    .verifyTimesValue >
-                                                                20
-                                                            ) {
-                                                                this.errorMessageOwnText(
-                                                                    'No response from switch... will not try again.'
-                                                                )
-                                                            } else {
-                                                                this.errorMessageOwnText(
-                                                                    'No response from switch (' +
-                                                                        this
-                                                                            .verifyTimesValue +
-                                                                        '/ 20) trying again in 60 seconds....'
-                                                                )
-                                                            }
-                                                        }
-                                                    })
-                                                    .catch((error) => {
-                                                        this.switchProvisionedVerify = false
-                                                        this.errorMessage(error)
-                                                    })
-                                            } catch (error) {
-                                                console.log(error)
-                                            }
-                                        }, 60000 * i)
-                                    }
-                                    this.loadingSwitchProvisionedVerify = false
-                                    this.switchProvisionedVerify = false
-                                } else {
-                                    this.switchProvisioned = false
-                                }
-                            })
-                            .catch((error) => {
-                                this.loadingSwitchProvisioned = false
-                                this.switchProvisioned = false
-                                this.errorMessage(error)
-                            })
+                        this.startToVerifySwitch(response)
                     })
                     .catch((error) => {
-                        this.loadingUpdatedIpam = false
-                        this.updatedIpam = false
+                        this.loadingSwitchProvisioned = false
+                        this.switchProvisioned = false
                         this.errorMessage(error)
                     })
             } catch (error) {
                 this.loadingSwitchProvisionedVerify = false
                 this.loadingSwitchProvisioned = false
-                this.loadingUpdatedIpam = false
                 this.$store.commit(
                     'snackbarError',
                     'Something went wrong, open up console for more information.'
@@ -552,27 +451,9 @@ export default {
 
             this.loading = false
         },
-        getDataFromIpam() {
-            this.loading = true
-            try {
-                axios
-                    .get('/api/ipam/' + this.hostname)
-                    .then((response) => {
-                        this.ipamData = response.data.data
-                        this.step = 2
-                    })
-                    .catch((error) => {
-                        console.log(error)
-                        this.errorMessage(error)
-                    })
-            } catch (error) {
-                console.log(error)
-            }
-            this.loading = false
-        },
         validate() {
             if (this.valid) {
-                this.getDataFromIpam()
+                this.step = 2
             }
         },
     },
