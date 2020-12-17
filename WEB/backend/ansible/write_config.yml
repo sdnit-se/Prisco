@@ -1,0 +1,29 @@
+- hosts: "{{ target_ip_address }}"
+  gather_facts: no
+  vars:
+    ip_address: "{{ ip_address }}"
+    hostname: "{{ hostname }}"
+
+  tasks:
+    - name: SCP configuration to switch
+      ansible.netcommon.net_put:
+        src: /CISCO_BACKUPS/{{ ip_address }}.conf
+        protocol: scp
+        dest: flash:/{{ hostname }}.conf
+
+    - name: Set config as startup
+      cisco.ios.ios_command:
+        commands:
+        - command: copy flash:/{{ hostname }}.conf nvram:/startup-config
+          prompt: Destination filename \[startup-config\]?
+          answer: startup-config
+      register: cli_result
+
+    - name: Reboot switch
+      cisco.ios.ios_command:
+        commands:
+        - command: "reload\ny"
+      register: cli_result
+
+    - debug:
+        var: cli_result

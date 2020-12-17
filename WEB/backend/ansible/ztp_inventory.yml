@@ -1,0 +1,8 @@
+all:
+  children:
+    ztp_switches:
+      hosts:
+        XXX.XXX.XXX.[0:99]:
+    all_switches:
+      hosts:
+        XXX.XXX.XXX.[0:99]:

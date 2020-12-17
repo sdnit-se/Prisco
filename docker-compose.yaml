@@ -1,0 +1,42 @@
+version: "3.3"
+
+services:
+  ztp-web:
+    network_mode: "host"
+    build: ./WEB/backend
+    container_name: ztp-web
+    image: ztp-web:latest
+    restart: always
+    expose:
+      - "80"
+    privileged: true
+    environment:
+      - LC_ALL=C.UTF-8
+      - LANG=C.UTF-8
+    volumes:
+      - ./DHCP/data:/dhcp
+      - ./CISCO_MITT_BACKUPS:/CISCO_MITT_BACKUPS
+
+  ztp-dhcp:
+    network_mode: "host"
+    build: ./DHCP
+    container_name: ztp-dhcp
+    image: ztp-dhcp:latest
+    restart: always
+    expose:
+      - "67"
+      - "68"
+    volumes:
+      - ./DHCP/data:/data
+
+  ztp-tftp:
+    build: ./TFTP
+    container_name: ztp-tftp
+    image: ztp-tftp:latest
+    restart: always
+    ports:
+      - "69:69/udp"
+    expose:
+      - "69"
+    volumes:
+      - ./TFTP/configuration:/var/tftpboot

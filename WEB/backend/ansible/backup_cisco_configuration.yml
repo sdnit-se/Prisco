@@ -1,0 +1,15 @@
+- name: Backup configs on Cisco switchen in Mitt
+  hosts: all_switches
+  gather_facts: false
+  connection: network_cli
+  become: yes
+
+  tasks:
+    - name: backup the config
+      ios_config:
+        backup: yes
+      register: backup_config
+    - name: Store the config to directory
+      copy:
+        src: "{{ backup_config.backup_path }}"
+        dest: "/CISCO_BACKUPS/{{ inventory_hostname }}.conf"

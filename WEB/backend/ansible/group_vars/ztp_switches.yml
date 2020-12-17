@@ -1,0 +1,8 @@
+# switches.yml
+ansible_network_os: cisco.ios.ios
+ansible_connection: network_cli
+ansible_user: ztp
+ansible_password: ztppassword
+ansible_become: yes
+ansible_become_method: enable
+ansible_become_password: myenablepassword

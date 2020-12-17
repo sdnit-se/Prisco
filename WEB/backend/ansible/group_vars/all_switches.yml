@@ -1,0 +1,5 @@
+# switches.yml
+ansible_network_os: cisco.ios.ios
+ansible_connection: ansible.netcommon.network_cli
+ansible_user: SSH-USERNAME-HERE
+ansible_password: SSH-PASSWORD-HERE
