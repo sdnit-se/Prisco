@@ -3,6 +3,7 @@ CISCO_MITT_BACKUPS/*
 
 .DS_Store
 node_modules/
+.eslintcache
 /dist/
 
 # local env files
