@@ -4,14 +4,6 @@
         <div class="mb-10 display-1 font-weight-light">
             Zero Touch Cisco Provisioning System
         </div>
-        <div class="headline font-weight-light">What would you like to do?</div>
-        <v-row align="center" justify="center">
-            <ProvisionSwitchStepper
-                button-text="Recover Switch"
-                button-color="blue"
-                card-header="Recover Switch"
-            />
-        </v-row>
         <v-card min-height="300" class="mt-12 font-weight-light">
             <v-card-title center> Switches found in ZTP mode </v-card-title>
             <v-card-text>
@@ -61,12 +53,10 @@
 
 <script>
 import axios from 'axios'
-import ProvisionSwitchStepper from '~/components/recover/stepper.vue'
 import WhatToDoWithSwitch from '~/components/foundinztpmode/index.vue'
 
 export default {
     components: {
-        ProvisionSwitchStepper,
         WhatToDoWithSwitch,
     },
     data() {

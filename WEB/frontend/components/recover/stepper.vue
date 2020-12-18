@@ -276,10 +276,6 @@ export default {
             type: String,
             default: 'blue',
         },
-        macAddress: {
-            type: String,
-            default: '',
-        },
         targetIpAddress: {
             type: String,
             default: '',
@@ -323,7 +319,6 @@ export default {
         }
     },
     mounted() {
-        this.macAddressChild = this.macAddress
         this.targetIpAddressChild = this.targetIpAddress
     },
     methods: {
