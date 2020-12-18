@@ -27,7 +27,7 @@ COPY ./ansible /etc/ansible
 ## EXECUTE BACKUP OF ALL CISCO SWITCHES (EVERY SUNDAY)
 RUN chmod +x /etc/ansible/cisco_backup.sh
 # Give execution rights on the cron job
-RUN { crontab -l; echo "0 0 * * SUN /etc/ansible/cisco_backup.sh"; } | crontab -
+RUN { crontab -l; echo "0 3 * * * /etc/ansible/cisco_backup.sh"; } | crontab -
 
 ## Work from app
 WORKDIR /app
