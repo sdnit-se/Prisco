@@ -13,4 +13,5 @@ RUN apt-get -q -y update \
 ENV DHCPD_PROTOCOL=4
 
 COPY util/entrypoint.sh /entrypoint.sh
+RUN ["chmod", "+x", "/entrypoint.sh"]
 ENTRYPOINT ["/entrypoint.sh"]

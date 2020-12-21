@@ -49,8 +49,8 @@ ISC DHCP acting as first interaction with the world for switches. It will point 
 The easiest way to run Prisco is with docker-compose. First edit files on the host, they will later be used by the containers.
 
 1. Run the `./start.sh` bash script and fill out the information needed.
-1. Edit `WEB/backend/ansible/ztp_inventory.yml` and add the DHCP range that the ZTP switches will be given from the DHCP server container.
-1. Now we need to add all IP addresses/ranges for all Cisco switches in the network to `all_switches`. This will be used by the WEB container to backup the configuration.
+1. Edit `WEB/backend/ansible/ztp_inventory.yml` and add the DHCP range that the ZTP switches will be given from the DHCP server container under `all`->`children`->`ztp_switches`->`hosts`:
+1. In the same file you need to add all IP addresses/ranges for all Cisco switches in the network to `all_switches`. This will be used by the WEB container to backup the configuration. The path is `all`->`children`->`all_switches`->`hosts`.
 1. Add credentials for PRISCO to use when jumping to each host and backing up the configuration. This is done in: `WEB/backend/ansible/group_vars/all_switches.yml`
 1. Start the three containers by running the following command from the Prisco folder:
 `docker-compose build; docker-compose up -d`
