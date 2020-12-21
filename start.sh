@@ -21,12 +21,12 @@ while $LOOP; do
     echo "================="
     read -p "Is this correct?(Y/n):" -r answer
     if [[ $answer == *"Y"* ]]; then
-        find . -type f -exec sed -i "s/ZTP_DHCP_GATEWAY_IP_ZTP/$dhcpIPgateway/g" {} +
-        find . -type f -exec sed -i "s/ZTP_NETWORK_IP_ZTP/$networkIP/g" {} +
-        find . -type f -exec sed -i "s/ZTP_NETWORK_SUBNETMASK_ZTP/$networkMASK/g" {} +
-        find . -type f -exec sed -i "s/ZTP_FIRST_USEABLE_IP_ZTP/$firstUSABLEip/g" {} +
-        find . -type f -exec sed -i "s/ZTP_LAST_USEABLE_IP_ZTP/$lastUSABLEip/g" {} +
-        find . -type f -exec sed -i "s/ZTP_TFTP_SERVER_IP_ZTP/$tftpSERVERip/g" {} +
+        find . -type f -exec sed -i 's/'"ZTP_DHCP_GATEWAY_IP_ZTP"'/'"$dhcpIPgateway"'/g' {} +
+        find . -type f -exec sed -i 's/'"ZTP_NETWORK_IP_ZTP"'/'"$networkIP"'/g' {} +
+        find . -type f -exec sed -i 's/'"ZTP_NETWORK_SUBNETMASK_ZTP"'/'"$networkMASK"'/g' {} +
+        find . -type f -exec sed -i 's/'"ZTP_FIRST_USEABLE_IP_ZTP"'/'"$firstUSABLEip"'/g' {} +
+        find . -type f -exec sed -i 's/'"ZTP_LAST_USEABLE_IP_ZTP"'/'"$lastUSABLEip"'/g' {} +
+        find . -type f -exec sed -i 's/'"ZTP_TFTP_SERVER_IP_ZTP"'/'"$tftpSERVERip"'/g' {} +
     elif [[ $answer == *"n"* ]]; then
         echo "Bye Bye..."
         LOOP=false
