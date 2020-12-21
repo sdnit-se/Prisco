@@ -1,50 +1,64 @@
-# Prisco -  Zero Touch Provisioning for Cisco
+# Prisco -  **Pr**visioning C**isco**
 
-Prisco automatically detects new switches in the network connected to the DHCP Server.
-Create or recover a switch by either call the API endpoints or use the GUI.
+> Zero Touch Provisioning for Cisco devices.
 
-## Quick Links
+Detect and configure new Cisco devices in your network.
 
-- [How does Prisco work?](#How does Prisco work)
-- [Docker containers](#Docker containers)
-- [Setup](#setup)
+Use GUI or API endpoint in Prisco to recover your devices to the last backed up config.
 
-## How does Prisco work
+## Overview
 
-Prisco makes a backup of all Cisco switches added to the Ansible group_vars file which is later used to recover switches. If you want to setup a new switch you can add it to the group_vars file and add the configuration manually to ```CISCO_BACKUPS/{IP_ADDRESS}.conf```.
+Prisco will intercept devices that is doing ZTP-boot, using DHCP and TFPT to detect and configure "new" devices, devices booting without config. Prisco vill present detected devices in a GUI and let you choose a previous backup to configure the device with.
 
-When entering the GUI or calling the /api/leases endpoint Prisco looks at the dhcp.leases file in the DHCP container to get the current switches thats in ZTP-mode.
-If you choose one of switches in ZTP-mode Prisco will ask for the hostname and IP address it should configure into the Switch. After the information is provided the process of "restoring" the switch will start by Prisco sending the configuration from the CISCO_BACKUP folder to the switch schedule a reboot with the configuration as startup-config.
+Prisco is currently build for Cisco switches but can be extended to support any type of device that does TFTP boot.
 
-## Docker containers
+### Backup
 
-- TFTP Server
-- DHCP Server
-- WEB (GUI & API)
+Prisco makes a backup of all Cisco switches added to the Ansible `group_vars` file which is later used to recover switches.
 
-**TFTP SERVER**  
+### New devices
+
+If you want to setup a new switch (not bucked up by Prisco) you can add it to the `group_vars` file and add the configuration manually to `CISCO_BACKUPS/{IP_ADDRESS}.conf`.
+
+### Operation
+
+When entering the GUI or calling the /api/leases endpoint Prisco looks at the dhcp.leases file in the DHCP container to get the current switches thats in ZTP-mode.  
+If you choose one of switches in ZTP-mode Prisco will ask for the hostname and IP address it should configure into the Switch. After the information is provided the process of "restoring" the switch will start by Prisco sending the configuration from the `CISCO_BACKUP` folder to the switch schedule a reboot with the configuration as startup-config.
+
+## Architecture
+
+### Docker containers
+
+### WEB, API and Ansible
+
+* A Vuejs application gives the user a graphical user interface to work in.
+* Rest-API for provisioning as an alternative to the GUI.
+* `Ansible` for backup of all switches configured in the `group_vars`.
+* `Ansible` to configure switches configured via API or GUI.
+
+### TFTP SERVER
+
 Hosting of Basic Configuration to give Prisco access to the switch.
 
-**DHCP SERVER** (Running ISC dhcpd)  
-First interaction with the world will be with the DHCP Server. It will point the switch to the configuration file in the TFTP server.
+### DHCP SERVER
 
-**WEB** (Running Ansible, Python3)  
-Hosting the provisioning endpoints and the wonderful vuejs GUI to interact with it directly without the knowledge of rest. WEB container does a backup of all switches configured in the group_vars file every sunday through Ansible.
+ISC DHCP acting as first interaction with the world for switches. It will point the switch to the configuration file in the TFTP server.
 
-## SETUP
+## Setup
 
-Start by running the ```./start.sh``` bash script and fill out the information needed.
+The easiest way to run Prisco is with docker-compose. First edit files on the host, they will later be used by the containers.
 
-After the ./start.sh is done we will need to add some more configuration to have Ansible up and running correctly.
-Open up ```WEB/backend/ansible/ztp_inventory.yml``` and add the dhcp range that the ZTP switches will be given from the DHCP server container. Now we need to add all ip addresses/ ranges for all cisco switches in the network to **all_switches**.This will be used by the WEB container to backup the configuration.
+1. Run the `./start.sh` bash script and fill out the information needed.
+1. Edit `WEB/backend/ansible/ztp_inventory.yml` and add the DHCP range that the ZTP switches will be given from the DHCP server container.
+1. Now we need to add all IP addresses/ranges for all Cisco switches in the network to `all_switches`. This will be used by the WEB container to backup the configuration.
+1. Add credentials for PRISCO to use when jumping to each host and backing up the configuration. This is done in: `WEB/backend/ansible/group_vars/all_switches.yml`
+1. Start the three containers by running the following command from the Prisco folder:
+`docker-compose build; docker-compose up -d`
 
-Now we need to add credentials for PRISCO to use when jumping to each host and backing up the configuration. This is done in: ```WEB/backend/ansible/group_vars/all_switches.yml```
+### Networking considerations
 
-When Prisco is comfy and configured we can now start all containers by running the following command from the ZTP-Cisco folder:
-```docker-compose build; docker-compose up -d```
+Make sure to have the following ports open _on the host running the containers_:
 
-**Make sure to have the following ports open:**  
-
-- WEB GUI and API is hosted on port 80 with uvicorn
-- DHCP uses port 67 and 68
-- TFTP Server uses 69
+* TCP port 80 for WEB GUI and API endpoint
+* UDP port 67 and 68 for DHCP
+* UDP port 69 for TFTP Server
