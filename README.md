@@ -8,9 +8,9 @@ Use GUI or API endpoint in Prisco to recover your devices to the last backed up 
 
 ## Overview
 
-Prisco will intercept devices that is doing ZTP-boot, using DHCP and TFPT to detect and configure "new" devices, devices booting without config. Prisco vill present detected devices in a GUI and let you choose a previous backup to configure the device with.
+Prisco will intercept devices that is doing ZTP-boot, using DHCP and TFPT to detect and configure "new" devices, devices booting without config. Devices available for recovery will be present in a GUI which you can select. Prisco will use the latest backup to configure the device with.
 
-Prisco is currently build for Cisco switches but can be extended to support any type of device that does TFTP boot.
+Prisco is currently built for Cisco switches but can be extended to support any type of device that does TFTP boot.
 
 ### Backup
 
@@ -18,12 +18,12 @@ Prisco makes a backup of all Cisco switches added to the Ansible `group_vars` fi
 
 ### New devices
 
-If you want to setup a new switch (not bucked up by Prisco) you can add it to the `group_vars` file and add the configuration manually to `CISCO_BACKUPS/{IP_ADDRESS}.conf`.
+If you want to setup a new switch (not backed up by Prisco) you can add it to the `group_vars` file and add the configuration manually to `CISCO_BACKUPS/{IP_ADDRESS}.conf`.
 
 ### Operation
 
 When entering the GUI or calling the /api/leases endpoint Prisco looks at the dhcp.leases file in the DHCP container to get the current switches thats in ZTP-mode.  
-If you choose one of switches in ZTP-mode Prisco will ask for the hostname and IP address it should configure into the Switch. After the information is provided the process of "restoring" the switch will start by Prisco sending the configuration from the `CISCO_BACKUP` folder to the switch schedule a reboot with the configuration as startup-config.
+If you choose one of the switches in ZTP-mode Prisco will ask for the hostname and IP address it should configure into the Switch. After the information is provided the process of "restoring" the switch will start by Prisco sending the configuration from the `CISCO_BACKUP` folder to the switch and schedule a reboot with the configuration as startup-config.
 
 ## Architecture
 
