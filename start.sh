@@ -41,4 +41,3 @@ elif [[ $answer == *"n"* ]]; then
 else
     echo -e "\n\nHave to write Y or n....."
 fi
-docker logs ztp-dhcp
