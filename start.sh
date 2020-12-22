@@ -32,7 +32,7 @@ if [[ $answer == *"Y"* ]]; then
     for f in "${ConfigFiles[@]}"; do
         echo Updating $f
         for i in "${!ConfigValues[@]}"; do
-            sed -i '' 's/'"${ParamNames[$i]}"'/'"${ConfigValues[$i]}"'/g' "${ConfigFiles[@]}"
+            sed -i.bak 's/'"${ParamNames[$i]}"'/'"${ConfigValues[$i]}"'/g' "${ConfigFiles[@]}"
         done
     done
 elif [[ $answer == *"n"* ]]; then
