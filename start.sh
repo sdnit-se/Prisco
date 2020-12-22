@@ -1,36 +1,44 @@
 #!/bin/bash
 
 currentIP=$(/sbin/ifconfig -a | awk '/(cast)/ { print $2 }' | cut -d':' -f2 | head -1)
-read -p "YOUR IP ADDRESS (e.g $currentIP): " -r tftpSERVERip
-read -p "DHCP IP GATEWAY (e.g 10.1.1.1): " -r dhcpIPgateway
-read -p "NETWORK (e.g 10.1.1.0): " -r networkIP
-read -p "NETWORK MASK (e.g 255.255.255.240): " -r networkMASK
-read -p "FIRST USABLE IP (e.g 10.1.1.2): " -r firstUSABLEip
-read -p "LAST USABLE IP (e.g 10.1.1.12): " -r lastUSABLEip
+echo Your current IP seems to be $currentIP
+echo
+declare -a ConfigFiles=("./DHCP/data/dhcpd.conf" "./TFTP/configuration/cisco_ztp_grund.conf")
+declare -a ParamNames=("ZTP_TFTP_SERVER_IP_ZTP" "ZTP_DHCP_GATEWAY_IP_ZTP" "ZTP_NETWORK_IP_ZTP" "ZTP_NETWORK_SUBNETMASK_ZTP" "ZTP_FIRST_USEABLE_IP_ZTP" "ZTP_LAST_USEABLE_IP_ZTP")
+declare -a QuestionStrings=("YOUR IP ADDRESS (e.g $currentIP): " "DHCP IP GATEWAY (e.g 10.1.1.1): " "NETWORK (e.g 10.1.1.0): " "NETWORK MASK (e.g 255.255.255.240): " "FIRST USABLE IP (e.g 10.1.1.2): " "LAST USABLE IP (e.g 10.1.1.12): ")
+declare -a ConfigValues
 
-LOOP=true
-
-while $LOOP; do
-    echo -e "\n===== DATA ====="
-    echo "YOUR IP ADDRESS: $tftpSERVERip"
-    echo "DHCP IP GATEWAY: $dhcpIPgateway"
-    echo "NETWORK: $networkIP"
-    echo "NETWORK MASK: $networkMASK"
-    echo "FIRST USABLE IP: $firstUSABLEip"
-    echo "LAST USABLE IP: $lastUSABLEip"
-    echo "================="
-    read -p "Is this correct?(Y/n):" -r answer
-    if [[ $answer == *"Y"* ]]; then
-        find . -type f -exec sed -i'' -e 's/'"ZTP_DHCP_GATEWAY_IP_ZTP"'/'"$dhcpIPgateway"'/g' {} +
-        find . -type f -exec sed -i'' -e 's/'"ZTP_NETWORK_IP_ZTP"'/'"$networkIP"'/g' {} +
-        find . -type f -exec sed -i'' -e 's/'"ZTP_NETWORK_SUBNETMASK_ZTP"'/'"$networkMASK"'/g' {} +
-        find . -type f -exec sed -i'' -e 's/'"ZTP_FIRST_USEABLE_IP_ZTP"'/'"$firstUSABLEip"'/g' {} +
-        find . -type f -exec sed -i'' -e 's/'"ZTP_LAST_USEABLE_IP_ZTP"'/'"$lastUSABLEip"'/g' {} +
-        find . -type f -exec sed -i'' -e 's/'"ZTP_TFTP_SERVER_IP_ZTP"'/'"$tftpSERVERip"'/g' {} +
-    elif [[ $answer == *"n"* ]]; then
-        echo "Bye Bye..."
-        LOOP=false
-    else
-        echo -e "\n\nHave to write Y or n....."
-    fi
+# Gather data
+for q in "${QuestionStrings[@]}"; do
+    echo -n $q
+    read
+    ConfigValues+=(${REPLY})
 done
+
+# Confirm data with user
+echo
+echo Your config:
+for i in "${!ConfigValues[@]}"; do
+    printf "%s\t%s\n" "${ParamNames[$i]}" "${ConfigValues[$i]}"
+done
+echo
+
+read -p "Is this correct?(Y/n):" -r answer
+echo
+
+# Update config files
+if [[ $answer == *"Y"* ]]; then
+    echo Updating config files
+    for f in "${ConfigFiles[@]}"; do
+        echo Updating $f
+        for i in "${!ConfigValues[@]}"; do
+            sed -i '' 's/'"${ParamNames[$i]}"'/'"${ConfigValues[$i]}"'/g' "${ConfigFiles[@]}"
+        done
+    done
+elif [[ $answer == *"n"* ]]; then
+    echo "Bye Bye..."
+
+else
+    echo -e "\n\nHave to write Y or n....."
+fi
+docker logs ztp-dhcp
