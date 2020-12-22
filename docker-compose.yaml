@@ -15,7 +15,7 @@ services:
       - LANG=C.UTF-8
     volumes:
       - ./DHCP/data:/dhcp
-      - ./CISCO_MITT_BACKUPS:/CISCO_MITT_BACKUPS
+      - ./CISCO_BACKUPS:/CISCO_BACKUPS
 
   ztp-dhcp:
     network_mode: "host"
