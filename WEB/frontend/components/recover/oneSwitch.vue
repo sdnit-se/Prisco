@@ -15,7 +15,7 @@
                     :value="ipAddress"
                     outlined
                     readonly
-                    label="New MAC-address"
+                    label="IP address of switch after provision"
                     required
                 ></v-text-field>
             </v-col>

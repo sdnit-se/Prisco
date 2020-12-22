@@ -420,7 +420,7 @@ export default {
                 // Start Provisioning
                 this.loadingSwitchProvisioned = true
                 const payloadProvision = {
-                    target_ipAddress: this.targetIpAddressChild,
+                    target_ip_address: this.targetIpAddressChild,
                     ip_address: this.ipAddress,
                     hostname: this.hostname,
                 }
