@@ -20,10 +20,31 @@ Prisco makes a backup of all Cisco switches added to the Ansible `group_vars` fi
 
 If you want to setup a new switch (not backed up by Prisco) you can add it to the `group_vars` file and add the configuration manually to `CISCO_BACKUPS/{IP_ADDRESS}.conf`.
 
+
 ### Operation
 
 When entering the GUI or calling the /api/leases endpoint Prisco looks at the dhcp.leases file in the DHCP container to get the current switches thats in ZTP-mode.  
 If you choose one of the switches in ZTP-mode Prisco will ask for the hostname and IP address it should configure into the Switch. After the information is provided the process of "restoring" the switch will start by Prisco sending the configuration from the `CISCO_BACKUP` folder to the switch and schedule a reboot with the configuration as startup-config.
+
+#### Screenshots
+
+Device discovered:
+
+![Device discovered](readme-imgs/1.PNG)
+
+Initiate recovery:
+
+![Device recovery](readme-imgs/2.PNG)
+
+Enter configuration:
+
+![Device configuration](readme-imgs/3.PNG)
+
+Recovery in progress:
+
+![Recovery in progress](readme-imgs/4.PNG)
+
+
 
 ## Architecture
 
@@ -55,6 +76,17 @@ The easiest way to run Prisco is with docker-compose. First edit files on the ho
 1. Start the three containers by running the following command from the Prisco folder:
 `docker-compose build; docker-compose up -d`
 
+### Setup screenshots
+
+Running `.start.sh`:
+
+![start.sh running](readme-imgs/6.PNG)
+
+Spinning up the needed containers:
+
+![docker-compose up](readme-imgs/7.PNG)
+
+
 ### Networking considerations
 
 Make sure to have the following ports open _on the host running the containers_:
@@ -62,3 +94,9 @@ Make sure to have the following ports open _on the host running the containers_:
 * TCP port 80 for WEB GUI and API endpoint
 * UDP port 67 and 68 for DHCP
 * UDP port 69 for TFTP Server
+
+### Integrations
+
+You can use the Prisco API to integrate Prisco into your solution. The Prisco API can be explored interactively at <https://<prisco-address>/docs>
+
+![API interactive browser](readme-imgs/5.PNG)
